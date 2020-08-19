@@ -1,10 +1,9 @@
-// Load up the discord.js library
 const Discord = require("discord.js");
 const fs = require('fs');
 const moment = require('moment');
 
 const client = new Discord.Client();
-var userData = JSON.parse(fs.readFileSync('userData.json'));
+var userData = JSON.parse(fs.readFileSync('./userData.json', 'utf-8'));
 
 const express = require('express');
 const app = express();
@@ -15,7 +14,6 @@ app.get("/", (req, res) => {
 
 app.listen(process.env.PORT);
 
-// Here we load the config.json file that contains our token and our prefix values. 
 const config = require("./package.json");
 // config.token contains the bot's token
 // config.prefix contains the message prefix.
@@ -41,7 +39,6 @@ client.on("message", async message => {
   if(message.author.bot) return;
 
   if (!message.guild) {
-    // client.users.cache.get("282319071263981568").send("**" + message.author.username + " pmed the bot: '" + message.content + "'**");
     if (message.author.id == "454550713557843978" || message.author.id == "282319071263981568") {
       try {
         client.channels.cache.get("745458649857785896").send(message.content)
@@ -50,7 +47,6 @@ client.on("message", async message => {
         message.author.send("Something went wrong and your message wasn't sent. o~o")
       }
     }
-    // console.log(message.author.username + " pmed the bot: '" + message.content + "'")
     return
   }
 
@@ -60,30 +56,25 @@ client.on("message", async message => {
   var sender = message.author;
   var mentioneduser = message.mentions.users.first();
   var userCount = message.guild.members.cache.filter(member => !member.user.bot).size;
-  const serverinfo = "(" + message.guild.name + ") "
-  var consolelog = serverinfo + message.author.username + ": " + config.prefix;
   
   // if (sender == client.users.cache.get("668174570750083100") && message.channel.id != '674055833469976596') {
   //   message.delete();
   // }
   
-  fs.writeFile('userData.json', JSON.stringify(userData), (err) => {
-    if (err) console.error(err);
-  })
-
-  if (!userData[sender.id]) {
+    if (!userData[sender.id]) {
       userData[sender.id] = {
         messages: 0
       }
   }
   userData[sender.id].messages++;
-  
+  console.log(userData[sender.id])
+
+  fs.writeFile('userData.json', JSON.stringify(userData), (err) => {
+    if (err) console.error(err);
+  })
+
   if(message.content.indexOf(config.prefix) !== 0) return;
   
-  // Here we separate our "command" name, and our "arguments" for the command. 
-  // e.g. if we have the message "+say Is this the real life?" , we'll get the following:
-  // command = say
-  // args = ["Is", "this", "the", "real", "life?"]
   var args = message.content.slice(config.prefix.length).trim().split(/ +/g);
   var command = args.shift().toLowerCase();
 
