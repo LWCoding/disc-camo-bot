@@ -20,19 +20,19 @@ const config = require("./package.json");
 
 client.on("ready", () => {
   console.log(`Bot has started, with ${client.users.cache.size} users, in ${client.channels.cache.size} channels of ${client.guilds.cache.size} guilds.`); 
-  client.user.setActivity(`Run commands with ${config.prefix} <command>.`);
+  client.user.setActivity(`Run "${config.prefix} help".`);
 });
 
 client.on("guildCreate", guild => {
   // This event triggers when the bot joins a guild.
   console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
-  client.user.setActivity(`Run commands with ${config.prefix} <command>.`);
+  client.user.setActivity(`Run "${config.prefix} help".`);
 });
 
 client.on("guildDelete", guild => {
   // this event triggers when the bot is removed from a guild.
   console.log(`I have been removed from: ${guild.name} (id: ${guild.id})`);
-  client.user.setActivity(`Run commands with ${config.prefix} <command>.`);
+  client.user.setActivity(`Run "${config.prefix} help".`);
 });
 
 client.on("message", async message => {
@@ -83,13 +83,123 @@ client.on("message", async message => {
 
   userData[sender.id].commandsUsed++;
 
+  if (command == "help") {
+    message.delete()
+    if (!args[0]) {
+      return message.channel.send({
+        "embed": {
+          "title": "**Bot Help & Commands**",
+          "description": "Of course sir! Use the command *" + config.prefix + "help <category>* to find out more information about a specific category!",
+          "url": "https://discordapp.com",
+          "color": 1025463,
+          "thumbnail": {
+            "url": "https://i.ibb.co/LdP6GKc/image0.jpg"
+          },
+          "fields": [
+            {
+              "name": "General :wrench:",
+              "value": "Random commands to play around with."
+            },
+            {
+              "name": "Fun 🎲",
+              "value": "Inventory and server economy commands."
+            },
+            {
+              "name": "Admin :robot:",
+              "value": "Advanced commands to help regulate the server."
+            }
+          ]
+        }
+      })
+    }
+
+    if (args[0].toLowerCase() == "fun" || args[0].toLowerCase() == "economy" || args[0].toLowerCase() == "eco") {
+        return message.channel.send({
+        "embed": {
+          "title": "**Fun Commands 🎲**",
+          "description": "Anything in <> is an argument you need to pass in, where [] is an optional argument!",
+          "url": "https://discordapp.com",
+          "color": 1025463,
+          "thumbnail": {
+            "url": "https://i.ibb.co/LdP6GKc/image0.jpg"
+          },
+          "fields": [
+            {
+              "name": config.prefix + "say <words>",
+              "value": "I'll say anything you want! Just don't make it too embarassing sir."
+            },  
+            {
+              "name": config.prefix + "roast <name>",
+              "value": "I'll roast a user, but I mean no harm. >~<"
+            }
+          ]
+        }
+      })
+    }
+    if (args[0].toLowerCase() == "general") {
+      return message.channel.send({
+        "embed": {
+          "title": "**General Commands :wrench:**",
+          "description": "Anything in <> is an argument you need to pass in, where [] is an optional argument!",
+          "url": "https://discordapp.com",
+          "color": 1025463,
+          "thumbnail": {
+            "url": "https://i.ibb.co/LdP6GKc/image0.jpg"
+          },
+          "fields": [
+            {
+              "name": config.prefix + "profile [user]",
+              "value": "I can tell you your information, or someone else's!"
+            },
+            {
+              "name": config.prefix + "pfp <user>",
+              "value": "I can get a user's profile picture if you want. •w•"
+            }
+          ]
+        }
+      })
+    }
+    if (args[0].toLowerCase() == "admin") {
+      message.channel.send({
+        "embed": {
+          "title": "**Administrative Commands :robot:**",
+          "description": "Anything in <> is an argument you  need to pass in, where [] is an optional argument!",
+          "url": "https://discordapp.com",
+          "color": 1025463,
+          "thumbnail": {
+            "url": "https://i.ibb.co/LdP6GKc/image0.jpg"
+          },
+          "fields": [
+            {
+              "name": config.prefix + "poll <title> <answer1> <answer2> [answer3] [answer4]",
+              "value": "I can do a poll for you! Separate all spaces using underscores '_'."
+            },
+            {
+              "name": config.prefix + "clear <number>",
+              "value": "I'll clear some messages for you, but make sure it's in between 1-100. •^•"
+            }
+          ]
+        }
+      })
+    } 
+    return
+  } 
+
+  if (command == "say") {
+    if (!args) {
+      return message.reply("sir? what do you want me to say?")
+    }
+    message.delete()
+    return message.channel.send(args.join(" "))
+  }
+
   if(command == "purge" || command == "delete" || command == "clear") {
     if (message.member.hasPermission("ADMINISTRATOR")) {
       const deleteCount = parseInt(args[0], 10)+1;
       if(!deleteCount || deleteCount < 1 || deleteCount > 100) {
         return message.reply("you can only delete between 1-100 messages, sir >~<");
       }
-      const fetched = await message.channel.fetchMessages({limit: deleteCount});
+      const fetched = await message.channel.messages.fetch({limit: deleteCount});
       try {
         message.channel.bulkDelete(fetched)
       } catch (error) {
@@ -153,6 +263,48 @@ client.on("message", async message => {
       }})
       return
     }
+  }
+
+  if (command == "poll") {
+    let polloptions = []
+    var eachopt = 0;
+    var alphabet = 'abcdefghijklmnopqrstuvwxyz'
+    for (eachopt in args.slice(1)) {
+      polloptions.push(":regional_indicator_" + alphabet[polloptions.length] + ": " + args.slice(1)[eachopt].replace(/_/g, " "))
+    }
+    let conveyedmsg = args.join(" ");
+    message.delete();
+    message.channel.send({"embed": {
+      "title": "**" + args[0].replace(/_/g, " ") + "**",
+      "description": polloptions.join("\n\n") + "\n\n[You aren't required to pick an option, but feel free to! Every opinion matters!](https://discordapp.com/api/oauth2/authorize?client_id=600540277404336148&permissions=8&scope=bot)",
+      "color": 7657439
+    }}).then(async reactedmsg => {
+      if (polloptions.length >= 1) {
+        await reactedmsg.react("🇦");
+      }
+      if (polloptions.length >= 2) {
+        await reactedmsg.react("🇧");
+      }
+      if (polloptions.length >= 3) {
+        await reactedmsg.react("🇨");
+      }
+      if (polloptions.length >= 4) {
+        await reactedmsg.react("🇩");
+      }
+      if (polloptions.length >= 5) {
+        await reactedmsg.react("🇪");
+      }
+      if (polloptions.length >= 6) {
+        await reactedmsg.react("🇫");
+      }
+      if (polloptions.length >= 7) {
+        await reactedmsg.react("🇬");
+      }
+      if (polloptions.length >= 8) {
+        await reactedmsg.react("🇭");
+      }
+    })
+    return
   }
 
   userData[sender.id].commandsUsed--;
