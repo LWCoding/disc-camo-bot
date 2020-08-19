@@ -61,37 +61,101 @@ client.on("message", async message => {
   //   message.delete();
   // }
   
-    if (!userData[sender.id]) {
-      userData[sender.id] = {
-        messages: 0
+  const checkFor = ["messages", "camoCoins", "commandsUsed"]
+  if (!userData[sender.id] || !checkFor.every((attr) => userData[sender.id][attr] !== undefined)) {
+    userData[sender.id] = {}
+    checkFor.forEach((attr) => {
+      if (userData[sender.id][attr] === undefined) {
+        userData[sender.id][attr] = 0;
       }
+    })
   }
   userData[sender.id].messages++;
-  console.log(userData[sender.id])
 
   fs.writeFile('userData.json', JSON.stringify(userData), (err) => {
     if (err) console.error(err);
   })
 
-  if(message.content.indexOf(config.prefix) !== 0) return;
+  if(message.content.toLowerCase().indexOf(config.prefix) !== 0) return;
   
   var args = message.content.slice(config.prefix.length).trim().split(/ +/g);
   var command = args.shift().toLowerCase();
+
+  userData[sender.id].commandsUsed++;
+
+  if(command == "purge" || command == "delete" || command == "clear") {
+    if (message.member.hasPermission("ADMINISTRATOR")) {
+      const deleteCount = parseInt(args[0], 10)+1;
+      if(!deleteCount || deleteCount < 1 || deleteCount > 100) {
+        return message.reply("you can only delete between 1-100 messages, sir >~<");
+      }
+      const fetched = await message.channel.fetchMessages({limit: deleteCount});
+      try {
+        message.channel.bulkDelete(fetched)
+      } catch (error) {
+        message.reply(`i couldn't do that because of ${error} o~o"`);
+      }
+    }
+    return
+  }
 
   if (command == "roast") {
       if (!args[0]) {
           return message.reply("who do you want me to roast? >~<")
       } else if (args[0].trim().toLowerCase() == "me") {
-          args[0] = sender.username
+          args = [sender.username]
       } 
+      args[0] = args.join(" ")
       let roasts = ["erm... {user} is a meanie", "{user} i'm not gonna read you a bedtime story ò~ó", "i don't really want to roast {user} sir... o~o"]
-      let roast = roasts[Math.floor(Math.random()*roasts.length)].replace("{user}", args[0])
+      let roast = roasts[Math.floor(Math.random()*roasts.length)].replace("{user}", `**${args[0]}**`)
       return message.channel.send(roast)
   }
 
-  if (command == "report" || command == "info") {
-      return message.reply(`you currently have ${userData[sender.id].messages} message(s) sent... i think. o~o`)
+  if (command == "report" || command == "info" || command == "profile" || command == "prof") {
+    if (!message.mentions.users.first()) {
+      message.channel.send({"embed": {
+        "title": sender.username + ":",
+        "description": `**:money_with_wings: C-Bucks:** ${userData[sender.id].camoCoins}
+                        **:speech_left: Messages Sent:** ${userData[sender.id].messages}
+                        **:loudspeaker: Commands Used:** ${userData[sender.id].commandsUsed}`,
+        "color": 9357965
+      }}) 
+    } else {
+      user = message.mentions.users.first()
+      try {
+        message.channel.send({"embed": {
+          "title": user.username + ":",
+          "description": `**:money_with_wings: C-Bucks:** ${userData[user.id].camoCoins}
+                          **:speech_left: Messages Sent:** ${userData[user.id].messages}`,
+          "color": 9357965
+        }}) 
+      } catch (error) {
+        message.reply("i couldn't find info on that user... >~<")
+      }
+    }
+    return
   }
+
+  if (command == "pfp" || command == "get" || command == "see") {
+    if (!message.mentions.users.first()) {
+      var user = client.users.cache.find(user => user.username === args.join(" "));
+      message.channel.send({"embed": {
+        image: {
+          "url": user.avatarURL()
+        }
+      }})
+    } else {
+      var user = message.mentions.users.first();
+      message.channel.send({"embed": {
+        image: {
+          "url": user.avatarURL()
+        }
+      }})
+      return
+    }
+  }
+
+  userData[sender.id].commandsUsed--;
 
 });
 
