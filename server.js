@@ -41,8 +41,16 @@ client.on("message", async message => {
   if(message.author.bot) return;
 
   if (!message.guild) {
-    client.users.cache.get("282319071263981568").send("**" + message.author.username + " pmed the bot: '" + message.content + "'**");
-    console.log(message.author.username + " pmed the bot: '" + message.content + "'")
+    // client.users.cache.get("282319071263981568").send("**" + message.author.username + " pmed the bot: '" + message.content + "'**");
+    if (message.author.id == "454550713557843978" || message.author.id == "282319071263981568") {
+      try {
+        client.channels.cache.get("745458649857785896").send(message.content)
+        message.author.send("Successfully sent the message: **" + message.content + "** in the general chat.")
+      } catch (error) {
+        message.author.send("Something went wrong and your message wasn't sent. o~o")
+      }
+    }
+    // console.log(message.author.username + " pmed the bot: '" + message.content + "'")
     return
   }
 
