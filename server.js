@@ -1,11 +1,11 @@
+require("./db/mongoose")
+const User = require("./models/user")
 const Discord = require("discord.js");
 const fs = require('fs');
 const moment = require('moment');
 const Filter = require("bad-words")
 
 const client = new Discord.Client();
-var userData = JSON.parse(fs.readFileSync('./userData.json', 'utf-8'));
-var commands = JSON.parse(fs.readFileSync('./commands.json', 'utf-8'));
 
 const express = require('express');
 const app = express();
@@ -58,29 +58,22 @@ client.on("message", async message => {
   var sender = message.author;
   var mentioneduser = message.mentions.users.first();
   var userCount = message.guild.members.cache.filter(member => !member.user.bot).size;
-  
+  var senderUser = await User.findOne({discordId: sender.id})
+
   // if (sender == client.users.cache.get("668174570750083100") && message.channel.id != '674055833469976596') {
   //   message.delete();
   // }
   
   const checkFor = ["messages", "camoCoins", "commandsUsed"]
-  if (!userData[sender.id] || !checkFor.every((attr) => userData[sender.id][attr] !== undefined)) {
-    userData[sender.id] = {}
-    checkFor.forEach((attr) => {
-      if (userData[sender.id][attr] === undefined) {
-        userData[sender.id][attr] = 0;
-      }
-    })
+
+  if (!senderUser) {
+    const newUser = new User({discordId: sender.id})
+    await newUser.save()
+    senderUser = newUser
   }
-  userData[sender.id].messages++;
 
-  fs.writeFile('userData.json', JSON.stringify(userData), (err) => {
-    if (err) console.error(err);
-  })
-
-  fs.writeFile('commands.json', JSON.stringify(commands), (err) => {
-    if (err) console.error(err);
-  })
+  senderUser.messages++;
+  await senderUser.save()
 
   if(message.content.toLowerCase().indexOf(config.prefix) !== 0) return;
   
@@ -97,7 +90,8 @@ client.on("message", async message => {
     pronoun = "commander";
   }
 
-  userData[sender.id].commandsUsed++;
+  senderUser.commandsUsed++;
+  await senderUser.save()
 
   if (command == "help") {
     message.delete()
@@ -245,15 +239,16 @@ client.on("message", async message => {
     if (!message.mentions.users.first()) {
       message.channel.send({"embed": {
         "title": sender.username + ":",
-        "description": `**:money_with_wings: C-Bucks:** ${userData[sender.id].camoCoins}\n**:speech_left: Messages Sent:** ${userData[sender.id].messages}\n**:loudspeaker: Commands Used:** ${userData[sender.id].commandsUsed}`,
+        "description": `**:money_with_wings: C-Bucks:** ${senderUser.camoCoins}\n**:speech_left: Messages Sent:** ${senderUser.messages}\n**:loudspeaker: Commands Used:** ${senderUser.commandsUsed}`,
         "color": 9357965
       }}) 
     } else {
       user = message.mentions.users.first()
       try {
+        const otherUser = await User.findOne({discordId: user.id})
         message.channel.send({"embed": {
           "title": user.username + ":",
-          "description": `**:money_with_wings: C-Bucks:** ${userData[user.id].camoCoins}\n**:speech_left: Messages Sent:** ${userData[user.id].messages}\n**:loudspeaker: Commands Used:** ${userData[user.id].commandsUsed}`,
+          "description": `**:money_with_wings: C-Bucks:** ${otherUser.camoCoins}\n**:speech_left: Messages Sent:** ${otherUser.messages}\n**:loudspeaker: Commands Used:** ${otherUser.commandsUsed}`,
           "color": 9357965
         }}) 
       } catch (error) {
@@ -326,29 +321,29 @@ client.on("message", async message => {
 
   if (command == "commands") {
     yourCommands = "Here is a list of your self-created commands:"
-    Object.keys(commands).forEach((cmd) => {
-      if (commands[cmd].senderId == sender.id) {
-        yourCommands += `\n**${cmd}** sends: ${commands[cmd].content}`
-      }
+    senderUser.commands.forEach((command) => {
+      let contents = ""
+      command.contents.forEach((response) => {
+        contents += `**${response.item}** or `
+      })
+      yourCommands += `\n**${command.command}** sends: ${contents.slice(0, contents.length - 4)}`
     })
     return message.reply(yourCommands)
   }
 
-  var foundInCustom = false;
-  Object.keys(commands).forEach((cmd) => {
-    let userCommand = `${command} ${args.join(" ")}`
-    if (userCommand.toLowerCase() == cmd.toLowerCase()) {
-      if (commands[userCommand].senderId == sender.id) {
-        message.channel.send(commands[userCommand].content)
-      } else {
-        message.channel.send(`You don't have permission to use that command ${pronoun}! Only your own. >~<`)
-      }
-      foundInCustom = true;
+  var commandFound = false;
+  senderUser.commands.forEach((cmd) => {
+    if (cmd.command == (command + " " + args.join(" "))) {
+      let randomResponse = cmd.contents[Math.floor(Math.random()*cmd.contents.length)].item;
+      commandFound = true;
+      return message.reply(randomResponse)
     }
   })
-  if (foundInCustom) return;
+  if (commandFound) return;
 
-  userData[sender.id].commandsUsed--;
+  senderUser.commandsUsed--;
+  senderUser.save()
+
   if (message.member.hasPermission("ADMINISTRATOR")) {
     message.reply(`I don't understand that command ${pronoun}. >~< Maybe you can teach me?`).then((msg) => {
       msg.react('👍');
@@ -363,7 +358,14 @@ client.on("message", async message => {
             if (content.length === 0 || filter.isProfane(content)) {
               return message.reply("sorry, i don't want to say that, or the message is too short! >~<")
             }
-            commands[`${command} ${args.join(" ")}`] = {content, senderId: sender.id}
+            senderUser.commands.push({
+              command: `${command} ${args.join(" ")}`,
+              contents: [{
+                item: content
+              }]
+            })
+            senderUser.save()
+            console.log(senderUser)
             return message.reply("Alright! I'll say **" + content + "** when you give me the command **" + (command + " " + args.join(" ")).trim() + "**.")
           }).catch((error) => {
             return message.reply("You took too long. Maybe try again? >~<")
