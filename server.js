@@ -39,26 +39,58 @@ client.on("guildDelete", guild => {
 
 client.on("message", async message => {
   if(message.author.bot) return;
+    
+  var sender = message.author;
+  var senderUser = await User.findOne({discordId: sender.id})
 
   if (!message.guild) {
-    if (message.author.id == "454550713557843978" || message.author.id == "282319071263981568") {
-      try {
-        client.channels.cache.get("745458649857785896").send(message.content)
-        message.author.send("Successfully sent the message: **" + message.content + "** in the general chat.")
-      } catch (error) {
-        message.author.send("Something went wrong and your message wasn't sent. o~o")
-      }
-    }
+    var args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+    var command = args.shift().toLowerCase();
+    if (message.content.slice(0, 5) != "camo ") return;
+    message.reply(`I don't understand that command. >~< Maybe you can teach me?`).then((msg) => {
+      msg.react('👍');
+      msg.react('👎');
+      msg.awaitReactions((reaction, user) => user.id == message.author.id && (reaction.emoji.name == '👍' || reaction.emoji.name == '👎'), {max: 1, time: 10000}).then((collected) => {
+        if (collected.first() === undefined) throw new Error("No emoji provided!")
+        if (collected.first().emoji.name == "👍") {
+          message.reply("Reply with the message you want me to respond with when someone uses that command. •w•")
+          message.author.dmChannel.awaitMessages(m => m.author.id == message.author.id, {max: 1, time: 60000}).then(collected => {
+            let content = collected.first().content
+            const filter = new Filter()
+            if (content.length === 0 || filter.isProfane(content)) {
+              return message.reply("sorry, i don't want to say that, or the message is too short! >~<")
+            }
+            let contents = []
+            let camoResponse = ""
+            content.split("|").forEach((response) => {
+              camoResponse += `**${response.trim()}** or `
+              contents.push({
+                item: response
+              })
+            })
+            let requiresCamo = !args.join(" ").includes(" -nocamo")
+            senderUser.commands.push({
+              command: `${command} ${args.join(" ")}`.trim().replace(" -nocamo", ""),
+              requiresCamo,
+              contents
+            })
+            senderUser.save()
+            return message.reply("Alright! I'll say " + camoResponse.slice(0, camoResponse.length - 4) + " when you give me the command **" + (command + " " + args.join(" ")).trim().replace(" -nocamo", "") + "**.")
+          }).catch((error) => {
+            return message.reply("You took too long. Maybe try again? >~<")
+          })
+        } else if (collected.first().emoji.name == "👎") {
+          return message.reply("Aborted the function customization. •~•")
+        }
+      }).catch((error) => {
+        return message.reply("Aborted the function customization. •~•")
+      })
+    })
     return
   }
 
   // SPY ON SERVERS THE BOT IS IN:
   // client.users.cache.get('282319071263981568').send("[" + message.channel.name + "] " + message.author.username + " >> " + message.content);
-  
-  var sender = message.author;
-  var mentioneduser = message.mentions.users.first();
-  var userCount = message.guild.members.cache.filter(member => !member.user.bot).size;
-  var senderUser = await User.findOne({discordId: sender.id})
 
   // if (sender == client.users.cache.get("668174570750083100") && message.channel.id != '674055833469976596') {
   //   message.delete();
@@ -72,6 +104,16 @@ client.on("message", async message => {
 
   senderUser.messages++;
   await senderUser.save()
+
+  var commandFound = false;
+  senderUser.commands.forEach((cmd) => {
+    if (!cmd.requiresCamo && (message.content == cmd.command)) {
+      let randomResponse = cmd.contents[Math.floor(Math.random()*cmd.contents.length)].item;
+      commandFound = true;
+      return message.reply(randomResponse)
+    }
+  })
+  if (commandFound) return;
 
   if(message.content.toLowerCase().indexOf(config.prefix) !== 0) return;
   
@@ -189,6 +231,18 @@ client.on("message", async message => {
             {
               "name": config.prefix + "clear <number>",
               "value": "I'll clear some messages for you, but make sure it's in between 1-100. •^•"
+            },
+            {
+              "name": config.prefix + "<text> [-nocamo]",
+              "value": "I'll prompt you on what you want me to say after you tell me that. It's like a custom command! If you say -nocamo at the end, I'll reply even when you don't have 'camo' at the beginning."
+            },
+            {
+              "name": config.prefix + "commands",
+              "value": "See all of your preset commands that you've taught me! •w•"
+            },
+            {
+              "name": config.prefix + "remove <command>",
+              "value": "Remove one of your premade commands! See all of them using " + config.prefix + "commands!"
             }
           ]
         }
@@ -209,10 +263,10 @@ client.on("message", async message => {
     return message.channel.send(args.join(" "))
   }
 
-  if(command == "purge" || command == "delete" || command == "clear") {
+  if(command == "purge" || command == "clear") {
     if (message.member.hasPermission("ADMINISTRATOR")) {
       const deleteCount = parseInt(args[0], 10)+1;
-      if(!deleteCount || deleteCount < 1 || deleteCount > 100) {
+      if(!deleteCount || deleteCount < 1 || deleteCount > 101) {
         return message.reply("you can only delete between 1-100 messages, " + pronoun + " >~<");
       }
       const fetched = await message.channel.messages.fetch({limit: deleteCount});
@@ -342,8 +396,21 @@ client.on("message", async message => {
     return message.reply(phrase)
   }
 
+  if (command == "remove") {
+    let startingLength = senderUser.commands.length;
+    for (let i = 0; i < senderUser.commands.length; i++) {
+      if (senderUser.commands[i].command == args.join(" ").trim()) {
+        senderUser.commands.splice(i, 1)
+        break
+      }
+    }
+    senderUser.save()
+    if (startingLength != senderUser.commands.length) return message.reply("Successfully deleted command!");
+    return message.reply("I couldn't find that command!");
+  }
+
   if (command == "commands") {
-    yourCommands = "Here is a list of your self-created commands:"
+    yourCommands = `Here is a list of your self-created commands. Delete one with "${config.prefix}" remove <command>:`
     senderUser.commands.forEach((command) => {
       let contents = ""
       command.contents.forEach((response) => {
@@ -354,6 +421,9 @@ client.on("message", async message => {
     return message.reply(yourCommands)
   }
 
+  senderUser.commandsUsed--;
+  senderUser.save()
+
   var commandFound = false;
   senderUser.commands.forEach((cmd) => {
     if (cmd.command == (command + " " + args.join(" ")).trim()) {
@@ -363,9 +433,6 @@ client.on("message", async message => {
     }
   })
   if (commandFound) return;
-
-  senderUser.commandsUsed--;
-  senderUser.save()
 
   if (message.member.hasPermission("ADMINISTRATOR")) {
     message.reply(`I don't understand that command ${pronoun}. >~< Maybe you can teach me?`).then((msg) => {
@@ -384,17 +451,19 @@ client.on("message", async message => {
             let contents = []
             let camoResponse = ""
             content.split("|").forEach((response) => {
-              camoResponse += `**${response}** or `
+              camoResponse += `**${response.trim()}** or `
               contents.push({
                 item: response
               })
             })
+            let requiresCamo = !args.join(" ").includes(" -nocamo")
             senderUser.commands.push({
-              command: `${command} ${args.join(" ")}`.trim(),
+              command: `${command} ${args.join(" ")}`.trim().replace(" -nocamo", ""),
+              requiresCamo,
               contents
             })
             senderUser.save()
-            return message.reply("Alright! I'll say " + camoResponse.slice(0, camoResponse.length - 4) + " when you give me the command **" + (command + " " + args.join(" ")).trim() + "**.")
+            return message.reply("Alright! I'll say " + camoResponse.slice(0, camoResponse.length - 4) + " when you give me the command **" + (command + " " + args.join(" ")).trim().replace(" -nocamo", "") + "**.")
           }).catch((error) => {
             return message.reply("You took too long. Maybe try again? >~<")
           })

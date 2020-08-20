@@ -27,7 +27,11 @@ const userSchema = mongoose.Schema({
                 type: String,
                 required: true
             }
-        }]
+        }],
+        requiresCamo: {
+            type: Boolean,
+            default: true
+        }
     }]
 })
 

@@ -5,7 +5,7 @@
   "prefix": "camo ",
   "scripts": {
     "start": "node server.js",
-    "dev": "env-cmd -f ./config/dev.env node server.js"
+    "dev": "env-cmd -f ./config/dev.env nodemon server.js -e js"
   },
   "keywords": [],
   "author": "",
