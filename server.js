@@ -333,7 +333,7 @@ client.on("message", async message => {
 
   var commandFound = false;
   senderUser.commands.forEach((cmd) => {
-    if (cmd.command == (command + " " + args.join(" "))) {
+    if (cmd.command == (command + " " + args.join(" ")).trim()) {
       let randomResponse = cmd.contents[Math.floor(Math.random()*cmd.contents.length)].item;
       commandFound = true;
       return message.reply(randomResponse)
@@ -358,15 +358,20 @@ client.on("message", async message => {
             if (content.length === 0 || filter.isProfane(content)) {
               return message.reply("sorry, i don't want to say that, or the message is too short! >~<")
             }
+            let contents = []
+            let camoResponse = ""
+            content.split("|").forEach((response) => {
+              camoResponse += `**${response}** or `
+              contents.push({
+                item: response
+              })
+            })
             senderUser.commands.push({
-              command: `${command} ${args.join(" ")}`,
-              contents: [{
-                item: content
-              }]
+              command: `${command} ${args.join(" ")}`.trim(),
+              contents
             })
             senderUser.save()
-            console.log(senderUser)
-            return message.reply("Alright! I'll say **" + content + "** when you give me the command **" + (command + " " + args.join(" ")).trim() + "**.")
+            return message.reply("Alright! I'll say " + camoResponse.slice(0, camoResponse.length - 4) + " when you give me the command **" + (command + " " + args.join(" ")).trim() + "**.")
           }).catch((error) => {
             return message.reply("You took too long. Maybe try again? >~<")
           })
