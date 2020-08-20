@@ -331,7 +331,7 @@ client.on("message", async message => {
     yourCommands = "Here is a list of your self-created commands:"
     Object.keys(commands).forEach((cmd) => {
       if (commands[cmd].senderId == sender.id) {
-        yourCommands += `\n$**${cmd}** sends: ${commands[cmd].content}`
+        yourCommands += `\n**${cmd}** sends: ${commands[cmd].content}`
       }
     })
     return message.reply(yourCommands)
