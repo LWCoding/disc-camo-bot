@@ -327,16 +327,26 @@ client.on("message", async message => {
     return
   }
 
+  if (command == "commands") {
+    yourCommands = "Here is a list of your self-created commands:"
+    Object.keys(commands).forEach((cmd) => {
+      if (commands[cmd].senderId == sender.id) {
+        yourCommands += `\n$**${cmd}** sends: ${commands[cmd].content}`
+      }
+    })
+    return message.reply(yourCommands)
+  }
+
   var foundInCustom = false;
   Object.keys(commands).forEach((cmd) => {
     let userCommand = `${command} ${args.join(" ")}`
     if (userCommand.toLowerCase() == cmd.toLowerCase()) {
       if (commands[userCommand].senderId == sender.id) {
         message.channel.send(commands[userCommand].content)
-        foundInCustom = true;
       } else {
         message.channel.send(`You don't have permission to use that command ${pronoun}! Only your own. >~<`)
       }
+      foundInCustom = true;
     }
   })
   if (foundInCustom) return;
