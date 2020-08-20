@@ -81,6 +81,12 @@ client.on("message", async message => {
   
   var args = message.content.slice(config.prefix.length).trim().split(/ +/g);
   var command = args.shift().toLowerCase();
+  var pronoun = sender.username;
+  if (message.member.roles.cache.some((role) => role.name === "He/Him")) {
+    pronoun = "sir";
+  } else if (message.member.roles.cache.some((role) => role.name === "She/Her")) {
+    pronoun = "ma'am";
+  }
 
   userData[sender.id].commandsUsed++;
 
@@ -90,7 +96,7 @@ client.on("message", async message => {
       return message.channel.send({
         "embed": {
           "title": "**Bot Help & Commands**",
-          "description": "Of course sir! Use the command *" + config.prefix + "help <category>* to find out more information about a specific category!",
+          "description": "Of course " + pronoun + "! Use the command *" + config.prefix + "help <category>* to find out more information about a specific category!",
           "url": "https://discordapp.com",
           "color": 1025463,
           "thumbnail": {
@@ -127,7 +133,7 @@ client.on("message", async message => {
           "fields": [
             {
               "name": config.prefix + "say <words>",
-              "value": "I'll say anything you want! Just don't make it too embarassing sir."
+              "value": "I'll say anything you want! Just don't make it too embarassing " + pronoun + "."
             },  
             {
               "name": config.prefix + "roast <name>",
@@ -188,11 +194,11 @@ client.on("message", async message => {
 
   if (command == "say") {
     if (!args) {
-      return message.reply("sir? what do you want me to say?")
+      return message.reply(pronoun + "? what do you want me to say?")
     }
     const filter = new Filter()
     if (filter.isProfane(args.join(" "))) {
-      return message.reply("i don't want to say that, sir! >~<")
+      return message.reply("i don't want to say that, " + pronoun + "! >~<")
     }
     message.delete()
     return message.channel.send(args.join(" "))
@@ -202,7 +208,7 @@ client.on("message", async message => {
     if (message.member.hasPermission("ADMINISTRATOR")) {
       const deleteCount = parseInt(args[0], 10)+1;
       if(!deleteCount || deleteCount < 1 || deleteCount > 100) {
-        return message.reply("you can only delete between 1-100 messages, sir >~<");
+        return message.reply("you can only delete between 1-100 messages, " + pronoun + " >~<");
       }
       const fetched = await message.channel.messages.fetch({limit: deleteCount});
       try {
