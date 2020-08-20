@@ -5,6 +5,7 @@ const Filter = require("bad-words")
 
 const client = new Discord.Client();
 var userData = JSON.parse(fs.readFileSync('./userData.json', 'utf-8'));
+var commands = JSON.parse(fs.readFileSync('./commands.json', 'utf-8'));
 
 const express = require('express');
 const app = express();
@@ -77,15 +78,23 @@ client.on("message", async message => {
     if (err) console.error(err);
   })
 
+  fs.writeFile('commands.json', JSON.stringify(commands), (err) => {
+    if (err) console.error(err);
+  })
+
   if(message.content.toLowerCase().indexOf(config.prefix) !== 0) return;
   
   var args = message.content.slice(config.prefix.length).trim().split(/ +/g);
   var command = args.shift().toLowerCase();
   var pronoun = sender.username;
-  if (message.member.roles.cache.some((role) => role.name === "He/Him")) {
-    pronoun = "sir";
-  } else if (message.member.roles.cache.some((role) => role.name === "She/Her")) {
-    pronoun = "ma'am";
+  if (sender.id != "454550713557843978") { 
+    if (message.member.roles.cache.some((role) => role.name === "He/Him")) {
+      pronoun = "sir";
+    } else if (message.member.roles.cache.some((role) => role.name === "She/Her")) {
+      pronoun = "ma'am";
+    }
+  } else {
+    pronoun = "commander";
   }
 
   userData[sender.id].commandsUsed++;
@@ -318,8 +327,43 @@ client.on("message", async message => {
     return
   }
 
+  var foundInCustom = false;
+  Object.keys(commands).forEach((cmd) => {
+    if (`${command} ${args.join(" ")}` == cmd) {
+      message.channel.send(commands[`${command} ${args.join(" ")}`])
+      foundInCustom = true;
+    }
+  })
+  if (foundInCustom) return;
+
   userData[sender.id].commandsUsed--;
 
+  message.reply(`I don't understand that command ${pronoun}. >~< Maybe you can teach me?`).then((msg) => {
+    msg.react('👍');
+    msg.react('👎');
+    msg.awaitReactions((reaction, user) => user.id == message.author.id && (reaction.emoji.name == '👍' || reaction.emoji.name == '👎'), {max: 1, time: 10000}).then((collected) => {
+      if (collected.first() === undefined) throw new Error("No emoji provided!")
+      if (collected.first().emoji.name == "👍") {
+        message.reply("Reply with the message you want me to respond with when someone uses that command. •w•")
+        message.channel.awaitMessages(m => m.author.id == message.author.id, {max: 1, time: 20000}).then(collected => {
+          let content = collected.first().content
+          const filter = new Filter()
+          if (content.length === 0 || filter.isProfane(content)) {
+            return message.reply("sorry, i don't want to say that, or the message is too short! >~<")
+          }
+          commands[`${command} ${args.join(" ")}`] = content
+          return message.reply("Alright! I'll say **" + content + "** when you give me the command **" + command + " " + args.join(" ") + "**.")
+        }).catch((error) => {
+          return
+        })
+      } else if (collected.first().emoji.name == "👎") {
+        return message.reply("Aborted the function customization. •~•")
+      }
+    }).catch((error) => {
+      console.log(error)
+      return
+    })
+  })
 });
 
   
