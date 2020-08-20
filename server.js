@@ -1,6 +1,7 @@
 const Discord = require("discord.js");
 const fs = require('fs');
 const moment = require('moment');
+const Filter = require("bad-words")
 
 const client = new Discord.Client();
 var userData = JSON.parse(fs.readFileSync('./userData.json', 'utf-8'));
@@ -188,6 +189,10 @@ client.on("message", async message => {
   if (command == "say") {
     if (!args) {
       return message.reply("sir? what do you want me to say?")
+    }
+    const filter = new Filter()
+    if (filter.isProfane(args.join(" "))) {
+      return message.reply("i don't want to say that, sir! >~<")
     }
     message.delete()
     return message.channel.send(args.join(" "))
