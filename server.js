@@ -245,9 +245,7 @@ client.on("message", async message => {
     if (!message.mentions.users.first()) {
       message.channel.send({"embed": {
         "title": sender.username + ":",
-        "description": `**:money_with_wings: C-Bucks:** ${userData[sender.id].camoCoins}
-                        **:speech_left: Messages Sent:** ${userData[sender.id].messages}
-                        **:loudspeaker: Commands Used:** ${userData[sender.id].commandsUsed}`,
+        "description": `**:money_with_wings: C-Bucks:** ${userData[sender.id].camoCoins}\n**:speech_left: Messages Sent:** ${userData[sender.id].messages}\n**:loudspeaker: Commands Used:** ${userData[sender.id].commandsUsed}`,
         "color": 9357965
       }}) 
     } else {
@@ -255,8 +253,7 @@ client.on("message", async message => {
       try {
         message.channel.send({"embed": {
           "title": user.username + ":",
-          "description": `**:money_with_wings: C-Bucks:** ${userData[user.id].camoCoins}
-                          **:speech_left: Messages Sent:** ${userData[user.id].messages}`,
+          "description": `**:money_with_wings: C-Bucks:** ${userData[user.id].camoCoins}\n**:speech_left: Messages Sent:** ${userData[user.id].messages}\n**:loudspeaker: Commands Used:** ${userData[user.id].commandsUsed}`,
           "color": 9357965
         }}) 
       } catch (error) {
@@ -367,7 +364,7 @@ client.on("message", async message => {
               return message.reply("sorry, i don't want to say that, or the message is too short! >~<")
             }
             commands[`${command} ${args.join(" ")}`] = {content, senderId: sender.id}
-            return message.reply("Alright! I'll say **" + content + "** when you give me the command **" + command + " " + args.join(" ") + "**.")
+            return message.reply("Alright! I'll say **" + content + "** when you give me the command **" + (command + " " + args.join(" ")).trim() + "**.")
           }).catch((error) => {
             return message.reply("You took too long. Maybe try again? >~<")
           })
