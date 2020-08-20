@@ -360,8 +360,7 @@ client.on("message", async message => {
         return message.reply("Aborted the function customization. •~•")
       }
     }).catch((error) => {
-      console.log(error)
-      return
+      return message.reply("Aborted the function customization. •~•")
     })
   })
 });
