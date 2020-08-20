@@ -329,40 +329,47 @@ client.on("message", async message => {
 
   var foundInCustom = false;
   Object.keys(commands).forEach((cmd) => {
-    if (`${command} ${args.join(" ")}`.toLowerCase() == cmd.toLowerCase()) {
-      message.channel.send(commands[`${command} ${args.join(" ")}`])
-      foundInCustom = true;
+    let userCommand = `${command} ${args.join(" ")}`
+    if (userCommand.toLowerCase() == cmd.toLowerCase()) {
+      if (commands[userCommand].senderId == sender.id) {
+        message.channel.send(commands[userCommand].content)
+        foundInCustom = true;
+      } else {
+        message.channel.send(`You don't have permission to use that command ${pronoun}! Only your own. >~<`)
+      }
     }
   })
   if (foundInCustom) return;
 
   userData[sender.id].commandsUsed--;
-
-  message.reply(`I don't understand that command ${pronoun}. >~< Maybe you can teach me?`).then((msg) => {
-    msg.react('👍');
-    msg.react('👎');
-    msg.awaitReactions((reaction, user) => user.id == message.author.id && (reaction.emoji.name == '👍' || reaction.emoji.name == '👎'), {max: 1, time: 10000}).then((collected) => {
-      if (collected.first() === undefined) throw new Error("No emoji provided!")
-      if (collected.first().emoji.name == "👍") {
-        message.reply("Reply with the message you want me to respond with when someone uses that command. •w•")
-        message.channel.awaitMessages(m => m.author.id == message.author.id, {max: 1, time: 60000}).then(collected => {
-          let content = collected.first().content
-          const filter = new Filter()
-          if (content.length === 0 || filter.isProfane(content)) {
-            return message.reply("sorry, i don't want to say that, or the message is too short! >~<")
-          }
-          commands[`${command} ${args.join(" ")}`] = content
-          return message.reply("Alright! I'll say **" + content + "** when you give me the command **" + command + " " + args.join(" ") + "**.")
-        }).catch((error) => {
-          return message.reply("You took too long. Maybe try again? >~<")
-        })
-      } else if (collected.first().emoji.name == "👎") {
+  if (message.member.hasPermission("ADMINISTRATOR")) {
+    message.reply(`I don't understand that command ${pronoun}. >~< Maybe you can teach me?`).then((msg) => {
+      msg.react('👍');
+      msg.react('👎');
+      msg.awaitReactions((reaction, user) => user.id == message.author.id && (reaction.emoji.name == '👍' || reaction.emoji.name == '👎'), {max: 1, time: 10000}).then((collected) => {
+        if (collected.first() === undefined) throw new Error("No emoji provided!")
+        if (collected.first().emoji.name == "👍") {
+          message.reply("Reply with the message you want me to respond with when someone uses that command. •w•")
+          message.channel.awaitMessages(m => m.author.id == message.author.id, {max: 1, time: 60000}).then(collected => {
+            let content = collected.first().content
+            const filter = new Filter()
+            if (content.length === 0 || filter.isProfane(content)) {
+              return message.reply("sorry, i don't want to say that, or the message is too short! >~<")
+            }
+            commands[`${command} ${args.join(" ")}`] = {content, senderId: sender.id}
+            return message.reply("Alright! I'll say **" + content + "** when you give me the command **" + command + " " + args.join(" ") + "**.")
+          }).catch((error) => {
+            return message.reply("You took too long. Maybe try again? >~<")
+          })
+        } else if (collected.first().emoji.name == "👎") {
+          return message.reply("Aborted the function customization. •~•")
+        }
+      }).catch((error) => {
         return message.reply("Aborted the function customization. •~•")
-      }
-    }).catch((error) => {
-      return message.reply("Aborted the function customization. •~•")
+      })
     })
-  })
+  }
+
 });
 
   
