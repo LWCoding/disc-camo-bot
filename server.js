@@ -345,7 +345,7 @@ client.on("message", async message => {
       if (collected.first() === undefined) throw new Error("No emoji provided!")
       if (collected.first().emoji.name == "👍") {
         message.reply("Reply with the message you want me to respond with when someone uses that command. •w•")
-        message.channel.awaitMessages(m => m.author.id == message.author.id, {max: 1, time: 20000}).then(collected => {
+        message.channel.awaitMessages(m => m.author.id == message.author.id, {max: 1, time: 60000}).then(collected => {
           let content = collected.first().content
           const filter = new Filter()
           if (content.length === 0 || filter.isProfane(content)) {
@@ -354,7 +354,7 @@ client.on("message", async message => {
           commands[`${command} ${args.join(" ")}`] = content
           return message.reply("Alright! I'll say **" + content + "** when you give me the command **" + command + " " + args.join(" ") + "**.")
         }).catch((error) => {
-          return
+          return message.reply("You took too long. Maybe try again? >~<")
         })
       } else if (collected.first().emoji.name == "👎") {
         return message.reply("Aborted the function customization. •~•")
