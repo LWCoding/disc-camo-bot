@@ -5,7 +5,7 @@ const userSchema = mongoose.Schema({
         type: Number,
         required: true
     },
-    camoCoins: {
+    coins: {
         type: Number,
         default: 0
     },

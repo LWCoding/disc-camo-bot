@@ -64,8 +64,6 @@ client.on("message", async message => {
   //   message.delete();
   // }
   
-  const checkFor = ["messages", "camoCoins", "commandsUsed"]
-
   if (!senderUser) {
     const newUser = new User({discordId: sender.id})
     await newUser.save()
@@ -239,7 +237,7 @@ client.on("message", async message => {
     if (!message.mentions.users.first()) {
       message.channel.send({"embed": {
         "title": sender.username + ":",
-        "description": `**:money_with_wings: C-Bucks:** ${senderUser.camoCoins}\n**:speech_left: Messages Sent:** ${senderUser.messages}\n**:loudspeaker: Commands Used:** ${senderUser.commandsUsed}`,
+        "description": `**:money_with_wings: C-Bucks:** ${senderUser.coins}\n**:speech_left: Messages Sent:** ${senderUser.messages}\n**:loudspeaker: Commands Used:** ${senderUser.commandsUsed}`,
         "color": 9357965
       }}) 
     } else {
@@ -248,7 +246,7 @@ client.on("message", async message => {
         const otherUser = await User.findOne({discordId: user.id})
         message.channel.send({"embed": {
           "title": user.username + ":",
-          "description": `**:money_with_wings: C-Bucks:** ${otherUser.camoCoins}\n**:speech_left: Messages Sent:** ${otherUser.messages}\n**:loudspeaker: Commands Used:** ${otherUser.commandsUsed}`,
+          "description": `**:money_with_wings: C-Bucks:** ${otherUser.coins}\n**:speech_left: Messages Sent:** ${otherUser.messages}\n**:loudspeaker: Commands Used:** ${otherUser.commandsUsed}`,
           "color": 9357965
         }}) 
       } catch (error) {
