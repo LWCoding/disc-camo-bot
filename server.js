@@ -162,6 +162,10 @@ client.on("message", async message => {
             {
               "name": config.prefix + "pfp <user>",
               "value": "I can get a user's profile picture if you want. •w•"
+            },
+            {
+              "name": config.prefix + "stylize <text>",
+              "value": "I'll stylize some text for channel names for you!"
             }
           ]
         }
@@ -315,6 +319,27 @@ client.on("message", async message => {
       }
     })
     return
+  }
+
+  if (command == "stylize") {
+    if (!args) {
+      return message.reply("What text do you want me to stylize?")
+    }
+    const fancyAlphabet = "𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇"
+    let phrase = ""
+    let baseWord = args.join(" ")
+    for (let i = 0; i < baseWord.length; i++) {
+      if (baseWord[i] == " ") {
+        phrase += "-"
+        continue
+      }
+      if (!"abcdefghijklmnopqrstuvwxyz".includes(baseWord[i])) {
+        phrase += baseWord[i]
+        continue
+      }
+      phrase += fancyAlphabet.slice((baseWord[i].toLowerCase().charCodeAt(0) - 97) * 2, (baseWord[i].toLowerCase().charCodeAt(0) - 96) * 2)
+    }
+    return message.reply(phrase)
   }
 
   if (command == "commands") {
