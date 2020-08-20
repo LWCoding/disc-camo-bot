@@ -281,8 +281,8 @@ client.on("message", async message => {
           "url": user.avatarURL()
         }
       }})
-      return
     }
+    return
   }
 
   if (command == "poll") {
@@ -329,7 +329,7 @@ client.on("message", async message => {
 
   var foundInCustom = false;
   Object.keys(commands).forEach((cmd) => {
-    if (`${command} ${args.join(" ")}` == cmd) {
+    if (`${command} ${args.join(" ")}`.toLowerCase() == cmd.toLowerCase()) {
       message.channel.send(commands[`${command} ${args.join(" ")}`])
       foundInCustom = true;
     }
