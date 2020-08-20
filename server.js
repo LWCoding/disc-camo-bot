@@ -266,7 +266,7 @@ client.on("message", async message => {
     return
   }
 
-  if (command == "pfp" || command == "get" || command == "see") {
+  if (command == "pfp") {
     if (!message.mentions.users.first()) {
       var user = client.users.cache.find(user => user.username === args.join(" "));
       message.channel.send({"embed": {
