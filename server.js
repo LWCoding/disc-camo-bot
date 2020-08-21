@@ -47,6 +47,19 @@ client.on("message", async message => {
     var args = message.content.slice(config.prefix.length).trim().split(/ +/g);
     var command = args.shift().toLowerCase();
     if (message.content.slice(0, 5) != "camo ") return;
+
+    var commandFound = false;
+    for (let i = 0; i < senderUser.commands.length; i++) {
+      let cmd = senderUser.commands[i]
+      if (cmd.command == (command + " " + args.join(" ")).trim()) {
+        let randomResponse = cmd.contents[Math.floor(Math.random()*cmd.contents.length)].item;
+        commandFound = true;
+        message.reply(randomResponse)
+        break
+      }
+    }
+    if (commandFound) return;
+
     message.reply(`I don't understand that command. >~< Maybe you can teach me?`).then((msg) => {
       msg.react('👍');
       msg.react('👎');
@@ -425,13 +438,15 @@ client.on("message", async message => {
   senderUser.save()
 
   var commandFound = false;
-  senderUser.commands.forEach((cmd) => {
+  for (let i = 0; i < senderUser.commands.length; i++) {
+    let cmd = senderUser.commands[i]
     if (cmd.command == (command + " " + args.join(" ")).trim()) {
       let randomResponse = cmd.contents[Math.floor(Math.random()*cmd.contents.length)].item;
       commandFound = true;
-      return message.reply(randomResponse)
+      message.reply(randomResponse)
+      break
     }
-  })
+  }
   if (commandFound) return;
 
   if (message.member.hasPermission("ADMINISTRATOR")) {
