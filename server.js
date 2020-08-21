@@ -50,7 +50,7 @@ client.on("message", async message => {
     var commandFound = false;
     for (let i = 0; i < senderUser.commands.length; i++) {
       let cmd = senderUser.commands[i]
-      if (cmd.command == message.content.trim()) {
+      if (cmd.command == message.content.trim().replace("-nocamo", "")) {
         let randomResponse = cmd.contents[Math.floor(Math.random()*cmd.contents.length)].item;
         commandFound = true;
         message.reply(randomResponse)
