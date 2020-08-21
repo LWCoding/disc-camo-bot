@@ -25,6 +25,42 @@ client.on("ready", () => {
   client.user.setActivity(`Run "${config.prefix} help".`);
 });
 
+client.on('guildMemberAdd', member => {
+  let user = member.user
+  member.roles.add("746461409533231225")
+  let chnl = member.guild.channels.cache.find((channel) => channel.id == "745459951509700628")
+  chnl.send(`**Welcome to the server <@!${user.id}>! I hope you like it here. uwu**`)
+  user.send({
+    "embed": {
+      "title": "**Quick Server Verification**",
+      "description": "Hi **" + user.username +"**! Welcome to the server! Send your answers to these questions in DMs, and a moderator will verify you shortly! \n**You only have one message, and you will not get another message until your form has been looked over.**",
+      "color": 8169053,
+      "thumbnail": {
+        "url": "https://i.ibb.co/Ydd5f5n/image0.png"
+      },
+      "fields": [
+        {
+          "name": "Question #1",
+          "value": "Here is some placeholder question text."
+        },
+        {
+          "name": "Question #2",
+          "value": "Here is some placeholder question text."
+        },
+        {
+          "name": "Question #3",
+          "value": "Here is some placeholder question text."
+        }
+      ]
+    }
+  })
+});
+
+client.on("guildMemberRemove", member => {
+  let chnl = member.guild.channels.cache.find((channel) => channel.id == "745459959512432702")
+  chnl.send(`**There goes <@!${member.user.id}>! I wonder if they'll come back. •~•**`)
+})
+
 client.on("guildCreate", guild => {
   // This event triggers when the bot joins a guild.
   console.log(`New guild joined: ${guild.name} (id: ${guild.id}). This guild has ${guild.memberCount} members!`);
@@ -37,6 +73,8 @@ client.on("guildDelete", guild => {
   client.user.setActivity(`Run "${config.prefix} help".`);
 });
 
+const waitingList = []
+
 client.on("message", async message => {
   if(message.author.bot) return;
     
@@ -47,10 +85,47 @@ client.on("message", async message => {
     var args = message.content.slice(config.prefix.length).trim().split(/ +/g);
     var command = args.shift().toLowerCase();
 
+    let loneGuild = client.guilds.cache.get("745455051866112080")
+    let senderMember = await loneGuild.members.fetch(sender.id)
+    if (waitingList.includes(sender.id)) {
+      return message.reply("You're already on the waiting list! Please wait until a moderator looks over your form.")
+    }
+    if (senderMember.roles.cache.some((role => role.id == "746461409533231225"))) {
+      waitingList.push(sender.id)
+      sender.send("**We have received your request! A moderator will look over your form shortly.**")
+      loneGuild.channels.cache.get("746453797697486879").send({
+        "embed": {
+          "title": "**Server Verification Form**",
+          "description": `**${sender.username}** has sent a verification request:\n\n> ${message.content}\n\nWould you like to approve it?`,
+          "color": 8169053,
+          "thumbnail": {
+            "url": "https://i.ibb.co/Ydd5f5n/image0.png"
+          }
+        }
+      }).then((msg) => {
+        msg.react('✅');
+        msg.react('❌');
+        msg.awaitReactions((reaction, user) => user.id == message.author.id && (reaction.emoji.name == '✅' || reaction.emoji.name == '❌'), {max: 1}).then((collected) => {
+          if (collected.first().emoji.name == "✅") {
+            senderMember.roles.remove("746461409533231225")
+            senderMember.roles.add("745460785597251624")
+            msg.channel.send(sender.username + " has been approved and their permissions have been changed.")
+            message.reply("✅ **Your verification form has been approved! Please check the server for your new permissions.**")
+          } else {
+            msg.channel.send(sender.username + " was rejected and have been notified of their rejection.")
+            message.reply("❌ **Your verification form was rejected. Please check and make sure you have answered all of the questions legitimately. Send another form when you are ready.**")
+          }
+          let idx = waitingList.indexOf(sender.id)
+          waitingList.splice(idx, 1)
+          return
+        })
+      })
+    }
+
     var commandFound = false;
     for (let i = 0; i < senderUser.commands.length; i++) {
       let cmd = senderUser.commands[i]
-      if (cmd.command == message.content.trim().replace("-nocamo", "")) {
+      if (cmd.command == message.content.trim().replace(" -nocamo", "")) {
         let randomResponse = cmd.contents[Math.floor(Math.random()*cmd.contents.length)].item;
         commandFound = true;
         message.reply(randomResponse)
@@ -292,8 +367,8 @@ client.on("message", async message => {
   if(command == "purge" || command == "clear") {
     if (message.member.hasPermission("ADMINISTRATOR")) {
       const deleteCount = parseInt(args[0], 10)+1;
-      if(!deleteCount || deleteCount < 1 || deleteCount > 101) {
-        return message.reply("you can only delete between 1-100 messages, " + pronoun + " >~<");
+      if(!deleteCount || deleteCount < 1 || deleteCount > 100) {
+        return message.reply("you can only delete between 1-99 messages, " + pronoun + " >~<");
       }
       const fetched = await message.channel.messages.fetch({limit: deleteCount});
       try {
