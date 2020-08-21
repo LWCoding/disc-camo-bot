@@ -46,6 +46,19 @@ client.on("message", async message => {
   if (!message.guild) {
     var args = message.content.slice(config.prefix.length).trim().split(/ +/g);
     var command = args.shift().toLowerCase();
+
+    var commandFound = false;
+    for (let i = 0; i < senderUser.commands.length; i++) {
+      let cmd = senderUser.commands[i]
+      if (cmd.command == message.content.trim()) {
+        let randomResponse = cmd.contents[Math.floor(Math.random()*cmd.contents.length)].item;
+        commandFound = true;
+        message.reply(randomResponse)
+        break
+      }
+    }
+    if (commandFound) return;
+
     if (message.content.slice(0, 5) != "camo ") return;
 
     var commandFound = false;
