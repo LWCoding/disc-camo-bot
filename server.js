@@ -46,11 +46,12 @@ client.on("message", async message => {
   if (!message.guild) {
     var args = message.content.slice(config.prefix.length).trim().split(/ +/g);
     var command = args.shift().toLowerCase();
+    if (message.content.slice(0, 5) != "camo ") return;
 
     var commandFound = false;
     for (let i = 0; i < senderUser.commands.length; i++) {
       let cmd = senderUser.commands[i]
-      if (cmd.command == message.content.slice(5).trim().toLowerCase()) {
+      if (cmd.command == (command + " " + args.join(" ")).trim()) {
         let randomResponse = cmd.contents[Math.floor(Math.random()*cmd.contents.length)].item;
         commandFound = true;
         message.reply(randomResponse)
@@ -82,12 +83,12 @@ client.on("message", async message => {
             })
             let requiresCamo = !args.join(" ").includes(" -nocamo")
             senderUser.commands.push({
-              command: `${command} ${args.join(" ")}`.trim().toLowerCase().replace(" -nocamo", ""),
+              command: `${command} ${args.join(" ")}`.trim().replace(" -nocamo", ""),
               requiresCamo,
               contents
             })
             senderUser.save()
-            return message.reply("Alright! I'll say " + camoResponse.slice(0, camoResponse.length - 4) + " when you give me the command **" + message.content.slice(5).trim().replace(" -nocamo", "") + "**.")
+            return message.reply("Alright! I'll say " + camoResponse.slice(0, camoResponse.length - 4) + " when you give me the command **" + (command + " " + args.join(" ")).trim().replace(" -nocamo", "") + "**.")
           }).catch((error) => {
             return message.reply("You took too long. Maybe try again? >~<")
           })
@@ -118,14 +119,13 @@ client.on("message", async message => {
   await senderUser.save()
 
   var commandFound = false;
-  for (let i = 0; i < senderUser.commands.length; i++) {
-    let cmd = senderUser.commands[i]
+  senderUser.commands.forEach((cmd) => {
     if (!cmd.requiresCamo && (message.content == cmd.command)) {
       let randomResponse = cmd.contents[Math.floor(Math.random()*cmd.contents.length)].item;
-      message.reply(randomResponse)
-      break
+      commandFound = true;
+      return message.reply(randomResponse)
     }
-  }
+  })
   if (commandFound) return;
 
   if(message.content.toLowerCase().indexOf(config.prefix) !== 0) return;
@@ -440,7 +440,7 @@ client.on("message", async message => {
   var commandFound = false;
   for (let i = 0; i < senderUser.commands.length; i++) {
     let cmd = senderUser.commands[i]
-    if (cmd.command == message.content.slice(5).trim().toLowerCase()) {
+    if (cmd.command == (command + " " + args.join(" ")).trim()) {
       let randomResponse = cmd.contents[Math.floor(Math.random()*cmd.contents.length)].item;
       commandFound = true;
       message.reply(randomResponse)
@@ -473,12 +473,12 @@ client.on("message", async message => {
             })
             let requiresCamo = !args.join(" ").includes(" -nocamo")
             senderUser.commands.push({
-              command: message.content.slice(5).trim().toLowerCase().replace(" -nocamo", ""),
+              command: `${command} ${args.join(" ")}`.trim().replace(" -nocamo", ""),
               requiresCamo,
               contents
             })
             senderUser.save()
-            return message.reply("Alright! I'll say " + camoResponse.slice(0, camoResponse.length - 4) + " when you give me the command **" + message.content.slice(5).trim().replace(" -nocamo", "") + "**.")
+            return message.reply("Alright! I'll say " + camoResponse.slice(0, camoResponse.length - 4) + " when you give me the command **" + (command + " " + args.join(" ")).trim().replace(" -nocamo", "") + "**.")
           }).catch((error) => {
             return message.reply("You took too long. Maybe try again? >~<")
           })
