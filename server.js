@@ -70,7 +70,7 @@ client.on("guildDelete", guild => {
 });
 
 const waitingList = []
-let loneGuild = client.guilds.cache.get("745455051866112080")
+const loneGuild = client.guilds.cache.get("745455051866112080")
 
 client.on("message", async message => {
   if(message.author.bot) return;
@@ -123,7 +123,7 @@ client.on("message", async message => {
     if (!senderUser) {
       return
     }
-    
+
     var commandFound = false;
     for (let i = 0; i < senderUser.commands.length; i++) {
       let cmd = senderUser.commands[i]
