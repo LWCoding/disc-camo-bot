@@ -92,7 +92,7 @@ client.on("message", async message => {
       loneGuild.channels.cache.get("746453797697486879").send({
         "embed": {
           "title": "**Server Verification Form**",
-          "description": "**" + sender.username + "** has sent a verification request:\n\n> " + message.content + "\n\nUse `" + config.prefix + "approve " + sender.username + "` to approve their form, or `" + config.prefix + "reject " + sender.username + "` to reject it.",
+          "description": "**" + sender.username + "** has sent a verification request:\n\n> " + message.content.replace("\n", " ") + "\n\Type `" + config.prefix + "verify " + sender.username + "` or `" + config.prefix + "reject " + sender.username + "`.",
           "color": 8169053,
           "thumbnail": {
             "url": "https://i.ibb.co/Ydd5f5n/image0.png"
