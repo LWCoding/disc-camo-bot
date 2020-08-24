@@ -70,6 +70,7 @@ client.on("guildDelete", guild => {
 });
 
 const waitingList = []
+let loneGuild = client.guilds.cache.get("745455051866112080")
 
 client.on("message", async message => {
   if(message.author.bot) return;
@@ -81,7 +82,6 @@ client.on("message", async message => {
     var args = message.content.slice(config.prefix.length).trim().split(/ +/g);
     var command = args.shift().toLowerCase();
 
-    let loneGuild = client.guilds.cache.get("745455051866112080")
     let senderMember = await loneGuild.members.fetch(sender.id)
     if (waitingList.includes(sender.id)) {
       return message.reply("You're already on the waiting list! Please wait until a moderator looks over your form.")
@@ -120,6 +120,10 @@ client.on("message", async message => {
       })
     }
 
+    if (!senderUser) {
+      return
+    }
+    
     var commandFound = false;
     for (let i = 0; i < senderUser.commands.length; i++) {
       let cmd = senderUser.commands[i]
