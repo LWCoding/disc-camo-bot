@@ -41,15 +41,11 @@ client.on('guildMemberAdd', member => {
       "fields": [
         {
           "name": "Question #1",
-          "value": "Here is some placeholder question text."
+          "value": "Are you 13 or older?"
         },
         {
           "name": "Question #2",
-          "value": "Here is some placeholder question text."
-        },
-        {
-          "name": "Question #3",
-          "value": "Here is some placeholder question text."
+          "value": "How did you hear about this server?"
         }
       ]
     }
