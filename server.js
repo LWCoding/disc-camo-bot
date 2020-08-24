@@ -101,7 +101,7 @@ client.on("message", async message => {
       }).then((msg) => {
         msg.react('✅');
         msg.react('❌');
-        msg.awaitReactions((reaction, user) => user.id == message.author.id && (reaction.emoji.name == '✅' || reaction.emoji.name == '❌'), {max: 1}).then((collected) => {
+        msg.awaitReactions((reaction, user) => user.id == message.author.id && (reaction.emoji.name == '✅' || reaction.emoji.name == '❌'), {max: 1, time:600000}).then((collected) => {
           if (collected.first().emoji.name == "✅") {
             senderMember.roles.remove("746461409533231225")
             senderMember.roles.add("745460785597251624")
@@ -114,6 +114,8 @@ client.on("message", async message => {
           let idx = waitingList.indexOf(sender.id)
           waitingList.splice(idx, 1)
           return
+        }).catch(() => {
+          msg.channel.send("The verification form has expired for " + sender.username + ". Please use the command `" + config.prefix + "verify " + sender.username + "` to verify the user, or `" + config.prefix + "reject " + sender.username + "` to reject the application.")
         })
       })
     }
@@ -409,6 +411,24 @@ client.on("message", async message => {
       }
     }
     return
+  }
+
+  if (command == "verify") {
+    const user = client.users.cache.find(user => user.username === args.join(" "));
+    const member = await loneGuild.members.fetch(user.id)
+    message.reply("Successfully accepted " + user.username + "'s application.")
+    member.roles.remove("746461409533231225")
+    member.roles.add("745460785597251624")
+    user.send("✅ **Your verification form has been approved! Please check the server for your new permissions.**")
+  }
+
+  if (command == "reject") {
+    const user = client.users.cache.find(user => user.username === args.join(" "));
+    const member = await loneGuild.members.fetch(user.id)
+    message.reply("Successfully rejected " + user.username + "'s application.")
+    member.roles.remove("746461409533231225")
+    member.roles.add("745460785597251624")
+    user.send("❌ **Your verification form was rejected. Please check and make sure you have answered all of the questions legitimately. Send another form when you are ready.**")
   }
 
   if (command == "pfp") {
