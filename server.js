@@ -92,32 +92,14 @@ client.on("message", async message => {
       loneGuild.channels.cache.get("746453797697486879").send({
         "embed": {
           "title": "**Server Verification Form**",
-          "description": `**${sender.username}** has sent a verification request:\n\n> ${message.content}\n\nWould you like to approve it?`,
+          "description": "**" + sender.username + "** has sent a verification request:\n\n> " + message.content + "\n\nUse `" + config.prefix + "approve " + sender.username + "` to approve their form, or `" + config.prefix + "reject " + sender.username + "` to reject it.",
           "color": 8169053,
           "thumbnail": {
             "url": "https://i.ibb.co/Ydd5f5n/image0.png"
           }
         }
-      }).then((msg) => {
-        msg.react('✅');
-        msg.react('❌');
-        msg.awaitReactions((reaction, user) => user.id == message.author.id && (reaction.emoji.name == '✅' || reaction.emoji.name == '❌'), {max: 1, time:600000}).then((collected) => {
-          if (collected.first().emoji.name == "✅") {
-            senderMember.roles.remove("746461409533231225")
-            senderMember.roles.add("745460785597251624")
-            msg.channel.send(sender.username + " has been approved and their permissions have been changed.")
-            message.reply("✅ **Your verification form has been approved! Please check the server for your new permissions.**")
-          } else {
-            msg.channel.send(sender.username + " was rejected and have been notified of their rejection.")
-            message.reply("❌ **Your verification form was rejected. Please check and make sure you have answered all of the questions legitimately. Send another form when you are ready.**")
-          }
-          let idx = waitingList.indexOf(sender.id)
-          waitingList.splice(idx, 1)
-          return
-        }).catch(() => {
-          msg.channel.send("The verification form has expired for " + sender.username + ". Please use the command `" + config.prefix + "verify " + sender.username + "` to verify the user, or `" + config.prefix + "reject " + sender.username + "` to reject the application.")
-        })
       })
+      return
     }
 
     if (!senderUser) {
@@ -425,6 +407,7 @@ client.on("message", async message => {
     member.roles.remove("746461409533231225")
     member.roles.add("745460785597251624")
     user.send("✅ **Your verification form has been approved! Please check the server for your new permissions.**")
+    return
   }
 
   if (command == "reject") {
@@ -435,6 +418,7 @@ client.on("message", async message => {
     member.roles.remove("746461409533231225")
     member.roles.add("745460785597251624")
     user.send("❌ **Your verification form was rejected. Please check and make sure you have answered all of the questions legitimately. Send another form when you are ready.**")
+    return
   }
 
   if (command == "pfp") {
