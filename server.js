@@ -80,7 +80,7 @@ client.on("message", async message => {
   if (!message.guild) {
     var args = message.content.slice(config.prefix.length).trim().split(/ +/g);
     var command = args.shift().toLowerCase();
-
+    
     const loneGuild = client.guilds.cache.get("745455051866112080")
     let senderMember = await loneGuild.members.fetch(sender.id)
     if (waitingList.includes(sender.id)) {
@@ -543,47 +543,45 @@ client.on("message", async message => {
   }
   if (commandFound) return;
 
-  if (message.member.hasPermission("ADMINISTRATOR")) {
-    message.reply(`I don't understand that command ${pronoun}. >~< Maybe you can teach me?`).then((msg) => {
-      msg.react('👍');
-      msg.react('👎');
-      msg.awaitReactions((reaction, user) => user.id == message.author.id && (reaction.emoji.name == '👍' || reaction.emoji.name == '👎'), {max: 1, time: 10000}).then((collected) => {
-        if (collected.first() === undefined) throw new Error("No emoji provided!")
-        if (collected.first().emoji.name == "👍") {
-          message.reply("Reply with the message you want me to respond with when someone uses that command. •w•")
-          message.channel.awaitMessages(m => m.author.id == message.author.id, {max: 1, time: 60000}).then(collected => {
-            let content = collected.first().content
-            const filter = new Filter()
-            if (content.length === 0 || filter.isProfane(content)) {
-              return message.reply("sorry, i don't want to say that, or the message is too short! >~<")
-            }
-            let contents = []
-            let camoResponse = ""
-            content.split("|").forEach((response) => {
-              camoResponse += `**${response.trim()}** or `
-              contents.push({
-                item: response
-              })
+  message.reply(`I don't understand that command ${pronoun}. >~< Maybe you can teach me?`).then((msg) => {
+    msg.react('👍');
+    msg.react('👎');
+    msg.awaitReactions((reaction, user) => user.id == message.author.id && (reaction.emoji.name == '👍' || reaction.emoji.name == '👎'), {max: 1, time: 10000}).then((collected) => {
+      if (collected.first() === undefined) throw new Error("No emoji provided!")
+      if (collected.first().emoji.name == "👍") {
+        message.reply("Reply with the message you want me to respond with when someone uses that command. •w•")
+        message.channel.awaitMessages(m => m.author.id == message.author.id, {max: 1, time: 60000}).then(collected => {
+          let content = collected.first().content
+          const filter = new Filter()
+          if (content.length === 0 || filter.isProfane(content)) {
+            return message.reply("sorry, i don't want to say that, or the message is too short! >~<")
+          }
+          let contents = []
+          let camoResponse = ""
+          content.split("|").forEach((response) => {
+            camoResponse += `**${response.trim()}** or `
+            contents.push({
+              item: response
             })
-            let requiresCamo = !args.join(" ").includes(" -nocamo")
-            senderUser.commands.push({
-              command: `${command} ${args.join(" ")}`.trim().replace(" -nocamo", ""),
-              requiresCamo,
-              contents
-            })
-            senderUser.save()
-            return message.reply("Alright! I'll say " + camoResponse.slice(0, camoResponse.length - 4) + " when you give me the command **" + (command + " " + args.join(" ")).trim().replace(" -nocamo", "") + "**.")
-          }).catch((error) => {
-            return message.reply("You took too long. Maybe try again? >~<")
           })
-        } else if (collected.first().emoji.name == "👎") {
-          return message.reply("Aborted the function customization. •~•")
-        }
-      }).catch((error) => {
+          let requiresCamo = !args.join(" ").includes(" -nocamo")
+          senderUser.commands.push({
+            command: `${command} ${args.join(" ")}`.trim().replace(" -nocamo", ""),
+            requiresCamo,
+            contents
+          })
+          senderUser.save()
+          return message.reply("Alright! I'll say " + camoResponse.slice(0, camoResponse.length - 4) + " when you give me the command **" + (command + " " + args.join(" ")).trim().replace(" -nocamo", "") + "**.")
+        }).catch((error) => {
+          return message.reply("You took too long. Maybe try again? >~<")
+        })
+      } else if (collected.first().emoji.name == "👎") {
         return message.reply("Aborted the function customization. •~•")
-      })
+      }
+    }).catch((error) => {
+      return message.reply("Aborted the function customization. •~•")
     })
-  }
+  })
 
 });
 
