@@ -1,8 +1,6 @@
 require("./db/mongoose")
 const User = require("./models/user")
 const Discord = require("discord.js");
-const fs = require('fs');
-const moment = require('moment');
 const Filter = require("bad-words")
 
 const client = new Discord.Client();
@@ -27,9 +25,10 @@ client.on("ready", () => {
 
 client.on('guildMemberAdd', member => {
   let user = member.user
-  member.roles.add("746461409533231225")
   let chnl = member.guild.channels.cache.find((channel) => channel.id == "745459951509700628")
   chnl.send(`**Welcome to the server <@!${user.id}>! I hope you like it here. uwu**`)
+  if (user.bot) return;
+  member.roles.add("746461409533231225")
   user.send({
     "embed": {
       "title": "**Quick Server Verification**",
@@ -549,7 +548,7 @@ client.on("message", async message => {
     msg.awaitReactions((reaction, user) => user.id == message.author.id && (reaction.emoji.name == '👍' || reaction.emoji.name == '👎'), {max: 1, time: 10000}).then((collected) => {
       if (collected.first() === undefined) throw new Error("No emoji provided!")
       if (collected.first().emoji.name == "👍") {
-        message.reply("Reply with the message you want me to respond with when someone uses that command. •w•")
+        message.reply("Reply with the message you want me to respond with when someone uses that command. Use | to separate different responses if you want me to randomize what I say. •w•")
         message.channel.awaitMessages(m => m.author.id == message.author.id, {max: 1, time: 60000}).then(collected => {
           let content = collected.first().content
           const filter = new Filter()
