@@ -70,7 +70,6 @@ client.on("guildDelete", guild => {
 });
 
 const waitingList = []
-const loneGuild = client.guilds.cache.get("745455051866112080")
 
 client.on("message", async message => {
   if(message.author.bot) return;
@@ -82,6 +81,7 @@ client.on("message", async message => {
     var args = message.content.slice(config.prefix.length).trim().split(/ +/g);
     var command = args.shift().toLowerCase();
 
+    const loneGuild = client.guilds.cache.get("745455051866112080")
     let senderMember = await loneGuild.members.fetch(sender.id)
     if (waitingList.includes(sender.id)) {
       return message.reply("You're already on the waiting list! Please wait until a moderator looks over your form.")
@@ -419,6 +419,7 @@ client.on("message", async message => {
 
   if (command == "verify") {
     const user = client.users.cache.find(user => user.username === args.join(" "));
+    const loneGuild = client.guilds.cache.get("745455051866112080")
     const member = await loneGuild.members.fetch(user.id)
     message.reply("Successfully accepted " + user.username + "'s application.")
     member.roles.remove("746461409533231225")
@@ -428,6 +429,7 @@ client.on("message", async message => {
 
   if (command == "reject") {
     const user = client.users.cache.find(user => user.username === args.join(" "));
+    const loneGuild = client.guilds.cache.get("745455051866112080")
     const member = await loneGuild.members.fetch(user.id)
     message.reply("Successfully rejected " + user.username + "'s application.")
     member.roles.remove("746461409533231225")
