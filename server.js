@@ -400,6 +400,8 @@ client.on("message", async message => {
 
   if (command == "verify") {
     const user = client.users.cache.find(user => user.username === args.join(" "));
+    waitingList.indexOf(user.username)
+    waitingList.splice(user.username, 1)
     const loneGuild = client.guilds.cache.get("745455051866112080")
     const member = await loneGuild.members.fetch(user.id)
     message.reply("Successfully accepted " + user.username + "'s application.")
@@ -411,6 +413,8 @@ client.on("message", async message => {
 
   if (command == "reject") {
     const user = client.users.cache.find(user => user.username === args.join(" "));
+    waitingList.indexOf(user.username)
+    waitingList.splice(user.username, 1)
     const loneGuild = client.guilds.cache.get("745455051866112080")
     const member = await loneGuild.members.fetch(user.id)
     message.reply("Successfully rejected " + user.username + "'s application.")
