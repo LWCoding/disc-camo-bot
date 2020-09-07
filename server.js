@@ -418,8 +418,6 @@ client.on("message", async message => {
     const loneGuild = client.guilds.cache.get("745455051866112080")
     const member = await loneGuild.members.fetch(user.id)
     message.reply("Successfully rejected " + user.username + "'s application.")
-    member.roles.remove("746461409533231225")
-    member.roles.add("745460785597251624")
     user.send("❌ **Your verification form was rejected. Please check and make sure you have answered all of the questions legitimately. Send another form when you are ready.**")
     return
   }
