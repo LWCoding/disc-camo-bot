@@ -400,14 +400,12 @@ client.on("message", async message => {
 
   if (command === "tell") {
     if (!message.member.hasPermission("ADMINISTRATOR")) return message.reply("Sorry, you don't have the permissions to do that!");
-    if (client.users.get("282319071263981568") == sender) {
-      var teller = client.users.find(u => u.username === args.slice(1).join(" "));
-      var saying = args[0];
-      teller.send(saying.replace(/_/g, " "));
-      message.delete();
-      sender.send("Sent message to " + args[1] + ": " + saying.replace(/_/g, " "))
-      return
-    }
+    var teller = client.users.ccache.find(u => u.username === args.slice(1).join(" "));
+    var saying = args[0];
+    teller.send(saying.replace(/_/g, " "));
+    message.delete();
+    sender.send("Sent message to " + args[1] + ": " + saying.replace(/_/g, " "))
+    return
   }
 
   if (command == "verify") {
