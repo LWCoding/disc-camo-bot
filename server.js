@@ -398,7 +398,20 @@ client.on("message", async message => {
     return
   }
 
+  if (command === "tell") {
+    if (!message.member.hasPermission("ADMINISTRATOR")) return message.reply("Sorry, you don't have the permissions to do that!");
+    if (client.users.get("282319071263981568") == sender) {
+      var teller = client.users.find(u => u.username === args.slice(1).join(" "));
+      var saying = args[0];
+      teller.send(saying.replace(/_/g, " "));
+      message.delete();
+      sender.send("Sent message to " + args[1] + ": " + saying.replace(/_/g, " "))
+      return
+    }
+  }
+
   if (command == "verify") {
+    if (!message.member.hasPermission("ADMINISTRATOR")) return message.reply("Sorry, you don't have the permissions to do that!");
     const user = client.users.cache.find(user => user.username === args.join(" "));
     waitingList.indexOf(user.username)
     waitingList.splice(user.username, 1)
@@ -412,11 +425,10 @@ client.on("message", async message => {
   }
 
   if (command == "reject") {
+    if (!message.member.hasPermission("ADMINISTRATOR")) return message.reply("Sorry, you don't have the permissions to do that!");
     const user = client.users.cache.find(user => user.username === args.join(" "));
     waitingList.indexOf(user.username)
     waitingList.splice(user.username, 1)
-    const loneGuild = client.guilds.cache.get("745455051866112080")
-    const member = await loneGuild.members.fetch(user.id)
     message.reply("Successfully rejected " + user.username + "'s application.")
     user.send("❌ **Your verification form was rejected. Please check and make sure you have answered all of the questions legitimately. Send another form when you are ready.**")
     return
