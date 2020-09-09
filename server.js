@@ -400,7 +400,7 @@ client.on("message", async message => {
 
   if (command === "tell") {
     if (!message.member.hasPermission("ADMINISTRATOR")) return message.reply("Sorry, you don't have the permissions to do that!");
-    var teller = client.users.ccache.find(u => u.username === args.slice(1).join(" "));
+    var teller = client.users.cache.find(u => u.username === args.slice(1).join(" "));
     var saying = args[0];
     teller.send(saying.replace(/_/g, " "));
     message.delete();
